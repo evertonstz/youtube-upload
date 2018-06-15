@@ -252,7 +252,7 @@ def run_main(parser, options, args, output=sys.stdout):
                 caption_upload_out = upload_caption(youtube, options, video_id)
                 print("Done!\n Caption ID:", caption_upload_out["caption_id"])
 
-            output.write("Done for ID:"video_id + "\n")
+            output.write("Done for ID:" + video_id + "\n")
     else:
         raise AuthenticationError("Cannot get youtube resource")
 
