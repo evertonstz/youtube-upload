@@ -218,8 +218,6 @@ def run_main(parser, options, args, output=sys.stdout):
     parse_options_error(parser, options)
     youtube = get_youtube_handler(options)
 
-    video_upload_status(youtube, options, "VtZIr9f7qxM")
-    exit()
     if youtube:
         for index, video_path in enumerate(args):
             video_id = upload_youtube_video(youtube, options, video_path, len(args), index)
