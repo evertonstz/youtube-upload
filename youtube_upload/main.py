@@ -17,6 +17,7 @@ Upload a video to Youtube from the command-line.
 
 import os
 import sys
+import time
 import optparse
 import collections
 import webbrowser
@@ -142,6 +143,44 @@ def upload_youtube_video(youtube, options, video_path, total_videos, index):
         progress.finish()
     return video_id
 
+def get_caption_text(file):
+    """will return a caption file as text"""
+    supported = [".srt"] #TODO: implement verification if it's a text file
+    with open(file, 'r') as text:
+        string_return = text.read()
+    return string_return
+
+def upload_caption(youtube, options, video_id):
+    """Will upload the caption as draft"""
+    file = get_caption_text(options.caption_file)
+    language = options.caption_lang
+    name = options.caption_name
+    if options.caption_status.lower() in ["no", "n"]:
+        is_draft = False
+    elif options.caption_status.lower() is ["yes", "y"]:
+        is_draft = Ture
+
+    print(language, name, is_draft)
+
+    insert_result = youtube.captions().insert(
+    part="snippet",
+    body=dict(
+        snippet=dict(
+            videoId=video_id,
+            language=language,
+            name=name,
+            isDraft=is_draft
+            )
+        ),
+        media_body=file
+    ).execute()
+
+    id = insert_result["id"]
+    name = insert_result["snippet"]["name"]
+    language = insert_result["snippet"]["language"]
+    status = insert_result["snippet"]["status"]
+    return {"caption_id":id, "caption_name":name, "caption_status":status}
+
 def get_youtube_handler(options):
     """Return the API Youtube object."""
     home = os.path.expanduser("~")
@@ -168,11 +207,19 @@ def parse_options_error(parser, options):
         msg = "Some required option are missing: {0}".format(", ".join(missing))
         raise OptionsError(msg)
 
+def video_upload_status(youtube, options, video_id):
+    status_dict = youtube.videos().list(part="status", id=video_id, maxResults=5).execute()
+    upload_status = status_dict['items'][0]['status']['uploadStatus']
+    return upload_status
+    #uploaded/processed
+
 def run_main(parser, options, args, output=sys.stdout):
     """Run the main scripts from the parsed options/args."""
     parse_options_error(parser, options)
     youtube = get_youtube_handler(options)
 
+    video_upload_status(youtube, options, "VtZIr9f7qxM")
+    exit()
     if youtube:
         for index, video_path in enumerate(args):
             video_id = upload_youtube_video(youtube, options, video_path, len(args), index)
@@ -186,7 +233,26 @@ def run_main(parser, options, args, output=sys.stdout):
             if options.playlist:
                 playlists.add_video_to_playlist(youtube, video_id, 
                     title=lib.to_utf8(options.playlist), privacy=options.privacy)
-            output.write(video_id + "\n")
+
+            """this will add the caption to the video via the video id"""
+            if options.caption_file:
+                #this will wait the video ends processing every 30 seconds, because google wont allow the caption to be added while it's not ended
+                print("Waiting for the video to process to upload the caption:\n", "Caption Name:", options.caption_name, "\nCaption File:", options.caption_file, "\nCaption Language:", options.caption_lang, "\nIs Draft:", options.caption_status)
+                video_status = video_upload_status(youtube, options, video_id)
+
+                #loop until video_status is processed
+                while video_status != "processed":
+                    time.sleep(30)
+                    video_status = video_upload_status(youtube, options, video_id)
+                    #print for debug
+                    print(video_status)
+
+                print("Processed! Uploading Captions")
+                #now it's pricessed will upload the caption
+                caption_upload_out = upload_caption(youtube, options, video_id)
+                print("Done!\n Caption ID:", caption_upload_out["caption_id"])
+
+            output.write("Done for ID:"video_id + "\n")
     else:
         raise AuthenticationError("Cannot get youtube resource")
 
@@ -231,6 +297,20 @@ def main(arguments):
         type="string", default="{title} [{n}/{total}]", metavar="string",
         help='Template for multiple videos (default: {title} [{n}/{total}])')
 
+    #basic caption option implemented
+    parser.add_option('', '--caption-file', dest='caption_file',
+        type="string", metavar="FILE",
+        help='Caption srt file')   
+    parser.add_option('', '--caption-lang', dest='caption_lang',
+        type="string", default="en", metavar="string",
+        help='Default language the for caption is en (ISO 639-1: en | fr | de | ...)')
+    parser.add_option('', '--caption-name', dest='caption_name',
+        type="string", default="Uplodaded from youtube-upload", metavar="string",
+        help='Default name for the caption "Uplodaded from youtube-upload"')
+    parser.add_option('', '--caption-asdraft', dest='caption_status',
+        type="string", default="no", metavar="string",
+        help='As default the caption is uploaded and published, by using "yes" in this option the caption will be uplodade as draft') 
+
     # Authentication
     parser.add_option('', '--client-secrets', dest='client_secrets',
         type="string", help='Client secrets JSON file')
@@ -238,6 +318,7 @@ def main(arguments):
         type="string", help='Credentials JSON file')
     parser.add_option('', '--auth-browser', dest='auth_browser', action='store_true',
         help='Open a GUI browser to authenticate if required')
+
 
     #Additional options
     parser.add_option('', '--chunksize', dest='chunksize', type="int", 
@@ -252,7 +333,13 @@ def main(arguments):
             options.description = file.read()
 
     try:
+        print(1,args,1)
+        if options.caption_file != None and len(args) > 1:
+            print("Multiple uploads are not supported when uploading a caption file.")
+            exit(1)
+        
         run_main(parser, options, args)
+        
     except googleapiclient.errors.HttpError as error:
         response = bytes.decode(error.content, encoding=lib.get_encoding()).strip()
         raise RequestError("Server response: {0}".format(response))
