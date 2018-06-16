@@ -106,7 +106,7 @@ def upload_youtube_video(youtube, options, video_path, total_videos, index):
     if options.title is not None:
         title = u(options.title)
     else:
-        title = u(ntpath.basename(video_path))
+        title = u(ntpath.basename(video_path).rpartition(".")[-1])
 
     if hasattr(u('string'), 'decode'):   
         description = u(options.description or "").decode("string-escape")
