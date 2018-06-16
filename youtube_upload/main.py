@@ -21,6 +21,7 @@ import time
 import optparse
 import collections
 import webbrowser
+import tempfile
 
 import googleapiclient.errors
 import oauth2client
@@ -143,24 +144,37 @@ def upload_youtube_video(youtube, options, video_path, total_videos, index):
         progress.finish()
     return video_id
 
-def get_caption_text(file):
-    """will return a caption file as text"""
-    supported = [".srt"] #TODO: implement verification if it's a text file
-    with open(file, 'r') as text:
-        string_return = text.read()
-    return string_return
+# def get_caption_tempfile(file):
+#     """will return a caption file as text"""
+#     supported = [".srt"] #TODO: implement verification if it's a text file
+
+#     #open a temporary file because google only allow txt files#
+#     with open(file, 'rb') as text:
+#         string_return = text.read()
+#     temp_file = tempfile.NamedTemporaryFile(suffix=".txt")
+#     temp_file.write(string_return)
+
+#     #return tempfile 
+#     return temp_file
 
 def upload_caption(youtube, options, video_id):
     """Will upload the caption as draft"""
-    file = get_caption_text(options.caption_file)
+
+    with open(options.caption_file, 'r') as text:
+        string_return = text.read()
+
+    #making a temporary file as google seems to only acept .txt file
+    temp_file = tempfile.NamedTemporaryFile(suffix=".txt",delete=False) #had to use delete=False because of Windows
+    temp_file.write(string_return.encode())
+    file = temp_file.name
+
     language = options.caption_lang
     name = options.caption_name
+
     if options.caption_status.lower() in ["no", "n"]:
         is_draft = False
     elif options.caption_status.lower() is ["yes", "y"]:
-        is_draft = Ture
-
-    print(language, name, is_draft)
+        is_draft = True
 
     insert_result = youtube.captions().insert(
     part="snippet",
@@ -179,6 +193,14 @@ def upload_caption(youtube, options, video_id):
     name = insert_result["snippet"]["name"]
     language = insert_result["snippet"]["language"]
     status = insert_result["snippet"]["status"]
+
+    #removing tempfile manually
+    temp_file.close()
+    try:
+        os.remove(file)
+    except:
+        pass
+
     return {"caption_id":id, "caption_name":name, "caption_status":status}
 
 def get_youtube_handler(options):
@@ -211,7 +233,8 @@ def video_upload_status(youtube, options, video_id):
     status_dict = youtube.videos().list(part="status", id=video_id, maxResults=5).execute()
     upload_status = status_dict['items'][0]['status']['uploadStatus']
     return upload_status
-    #uploaded/processed
+    #uploaded/processed/rejected
+    #TODO figure something out when the video gets rejected
 
 def run_main(parser, options, args, output=sys.stdout):
     """Run the main scripts from the parsed options/args."""
