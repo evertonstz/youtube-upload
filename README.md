@@ -50,10 +50,30 @@ The package includes a default ```client_secrets.json``` file. If you plan to ma
 * _Download JSON_: Under the section "OAuth 2.0 client IDs". Save the file to your local system. 
 * Use this JSON as your credentials file: ```--client-secrets=CLIENT_SECRETS```
 
-Examples
+About the captions
 ========
+When uploading a file with subtitle it'll usually take more time, beucase the program has to wait for the video to be processed by youtube before uploading the captions. For now only srt is supported.
 
-* Caption/subtitles commands:
+* UPLOAD A VIDEO AND A CAPTION: you can specify both, a video and a caption file path to send it to youtube, you can also specify the name and language of the caption. For now only .srt is supported. Exemple:
+```
+youtube-upload --caption-file=/foo/bar/caption_folder/my_sub.srt --caption-lang="en" /foo/bar/video_folder/my_video.mkv
+
+#will upload the my_video.mkv and my_sub.srt (named english subtitle) to youtube.
+```
+* AUTO SEARCH FOR CAPTION: use ```--caption-file="auto"``` and the program will try to find an srt file with the same name as the video file. Again, both files have to be in the same foder. Exemple:
+```
+youtube-upload --caption-file="auto" --caption-lang="en" /foo/bar/video_folder/my_video.mkv
+
+#will upload the my_video.mkv to youtube and try to find a my_video.srt and also upload it to youtube as english caption
+```
+* Multiple Videos: the videos and captions have to be in the same directory and with the same (exemple: video_legal.mkv and video_legal.srt, video_chato.mkv and video_chato.srt). Make sure to use ```--caption-file="auto"```. Exemple:
+```
+youtube-upload --caption-file="auto" --caption-lang="en" /foo/bar/video_folder/*
+
+#will upload all the videos in the folder to youtube and try to find all srt files with the same name and also upload it to youtube as english caption
+```
+
+* All commands available for captions
 ```
   --caption-file=FILE   Caption srt file
   --caption-lang=string
@@ -67,6 +87,9 @@ Examples
                         using "yes" in this option the caption will be
                         uplodade as draft
 ```
+
+Examples
+========
 * Upload a video:
 
 ```
