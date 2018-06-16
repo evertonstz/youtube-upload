@@ -1,6 +1,9 @@
+Fork: caption/subtitles support
+============
+This a fork from the original [Youtube-upload by tokland ](https://github.com/tokland/youtube-upload), the main reason of this fork existence is to add suport for captions to be uploaded to youtube alongside the video. If you used the old youtube-upload you'll have to delete your ".youtube-upload-credentials.json" file, as this new version requires more scopes.
+
 Introduction
 ============
-
 _Youtube-upload_ is a command line Python script that uploads videos to Youtube (it should work on any platform -GNU/Linux, BSD, OS X, Windows, ...- that runs Python) using theYoutube [APIv3](https://developers.google.com/youtube/v3/).
 
 Dependencies
@@ -17,10 +20,9 @@ $ sudo pip install --upgrade google-api-python-client progressbar2
 
 Install
 =======
-
+As there are no new releases yet, you'll have to clone the repository:
 ```
-$ wget https://github.com/tokland/youtube-upload/archive/master.zip
-$ unzip master.zip
+$ git clone https://github.com/tokland/youtube-upload.git
 $ cd youtube-upload-master
 $ sudo python setup.py install
 ```
@@ -51,6 +53,20 @@ The package includes a default ```client_secrets.json``` file. If you plan to ma
 Examples
 ========
 
+* Caption/subtitles commands:
+```
+  --caption-file=FILE   Caption srt file
+  --caption-lang=string
+                        Default language the for caption is en (ISO 639-1: en
+                        | fr | de | ...)
+  --caption-name=string
+                        Default name for the caption "Uplodaded from youtube-
+                        upload"
+  --caption-asdraft=string
+                        As default the caption is uploaded and published, by
+                        using "yes" in this option the caption will be
+                        uplodade as draft
+```
 * Upload a video:
 
 ```
