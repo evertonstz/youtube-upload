@@ -22,6 +22,8 @@ import optparse
 import collections
 import webbrowser
 import tempfile
+import io
+import ntpath
 
 import googleapiclient.errors
 import oauth2client
@@ -100,7 +102,12 @@ def get_category_id(category):
 def upload_youtube_video(youtube, options, video_path, total_videos, index):
     """Upload video with index (for split videos)."""
     u = lib.to_utf8
-    title = u(options.title)
+    
+    if options.title is not None:
+        title = u(options.title)
+    else:
+        title = u(ntpath.basename(video_path))
+
     if hasattr(u('string'), 'decode'):   
         description = u(options.description or "").decode("string-escape")
     else:
@@ -158,14 +165,19 @@ def upload_youtube_video(youtube, options, video_path, total_videos, index):
 #     return temp_file
 
 def upload_caption(youtube, options, video_id):
-    """Will upload the caption as draft"""
+    """uploading the subtitles"""
 
-    with open(options.caption_file, 'r') as text:
+    with io.open(options.caption_file, 'r', encoding="utf-8") as text:
         string_return = text.read()
 
     #making a temporary file as google seems to only acept .txt file
-    temp_file = tempfile.NamedTemporaryFile(suffix=".txt",delete=False) #had to use delete=False because of Windows
-    temp_file.write(string_return.encode())
+    if os.name == "nt":
+        temp_file = tempfile.NamedTemporaryFile(suffix=".txt",delete=False) #had to use delete=False because of Windows
+    else:
+        temp_file = tempfile.NamedTemporaryFile(suffix=".txt",delete=True)
+    
+    string_return = string_return.encode("UTF-8", 'ignore')
+    temp_file.write(string_return)
     file = temp_file.name
 
     language = options.caption_lang
@@ -222,7 +234,7 @@ def get_youtube_handler(options):
 
 def parse_options_error(parser, options):
     """Check errors in options."""
-    required_options = ["title"]
+    required_options = []
     missing = [opt for opt in required_options if not getattr(options, opt)]
     if missing:
         parser.print_usage()
@@ -240,6 +252,9 @@ def run_main(parser, options, args, output=sys.stdout):
     """Run the main scripts from the parsed options/args."""
     parse_options_error(parser, options)
     youtube = get_youtube_handler(options)
+    
+    #upload_caption(youtube, options, "MlSoCyeVodQ")
+    #exit()
 
     if youtube:
         for index, video_path in enumerate(args):
@@ -286,7 +301,7 @@ def main(arguments):
 
     # Video metadata
     parser.add_option('-t', '--title', dest='title', type="string",
-        help='Video title')
+        help='Video title. If blank or unused default title is the filename', default=None)
     parser.add_option('-c', '--category', dest='category', type="string",
         help='Video category')
     parser.add_option('-d', '--description', dest='description', type="string",
@@ -354,9 +369,8 @@ def main(arguments):
             options.description = file.read()
 
     try:
-        print(1,args,1)
         if options.caption_file != None and len(args) > 1:
-            print("Multiple uploads are not supported when uploading a caption file.")
+            print("Multiple uploads are not supported when uploading with caption file.")
             exit(1)
         
         run_main(parser, options, args)
