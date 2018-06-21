@@ -22,7 +22,7 @@ Install
 =======
 As there are no new releases yet, you'll have to clone the repository:
 ```
-$ git clone https://github.com/tokland/youtube-upload.git
+$ git clone https://github.com/evertonstz/youtube-upload.git
 $ cd youtube-upload-master
 $ sudo python setup.py install
 ```
