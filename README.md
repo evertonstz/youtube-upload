@@ -2,7 +2,7 @@ Fork: caption/subtitles support
 ============
 This is a fork from the original [Youtube-upload by tokland ](https://github.com/tokland/youtube-upload), the main reason for this fork's existence is to add suport for captions to be uploaded to youtube alongside the video. If you used the original youtube-upload you'll have to delete your ".youtube-upload-credentials.json" file, as this new version requires more scopes.
 
-The implementation isn't very good and you guys can see I'm not having to work on it to make it good enough for a pull request, but the changes are functional (kinda). More on how to use ahead v
+The implementation isn't very good and you guys can see I'm not having time to work on it to make it good enough for a pull request, but the changes are functional (kinda). More on how to use ahead v
 
 Introduction
 ============
@@ -82,12 +82,12 @@ youtube-upload --caption-file="auto" --caption-lang="en" /foo/bar/video_folder/*
                         Default language the for caption is en (ISO 639-1: en
                         | fr | de | ...)
   --caption-name=string
-                        Default name for the caption "Uplodaded from youtube-
+                        Default name for the caption is "Uplodaded from youtube-
                         upload"
   --caption-asdraft=string
                         As default the caption is uploaded and published, by
                         using "yes" in this option the caption will be
-                        uplodade as draft
+                        uplodaded as draft
 ```
 
 Examples
