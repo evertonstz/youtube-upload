@@ -1,6 +1,7 @@
 Fork: caption/subtitles support
 ============
-This a fork from the original [Youtube-upload by tokland ](https://github.com/tokland/youtube-upload), the main reason of this fork existence is to add suport for captions to be uploaded to youtube alongside the video. If you used the old youtube-upload you'll have to delete your ".youtube-upload-credentials.json" file, as this new version requires more scopes.
+This is a fork from the original [Youtube-upload by tokland ](https://github.com/tokland/youtube-upload), the main reason for this fork's existence is to add suport for captions to be uploaded to youtube alongside the video. If you used the original youtube-upload you'll have to delete your ".youtube-upload-credentials.json" file, as this new version requires more scopes.
+The implementation isn't very good and you guys can see I'm having to work on it to make it good enough for a pull request, but, the changes are functional (kinda). More on how to use ahead v
 
 Introduction
 ============
@@ -50,27 +51,27 @@ The package includes a default ```client_secrets.json``` file. If you plan to ma
 * _Download JSON_: Under the section "OAuth 2.0 client IDs". Save the file to your local system. 
 * Use this JSON as your credentials file: ```--client-secrets=CLIENT_SECRETS```
 
-About the captions
+About the captions/subtitles
 ========
-When uploading a file with subtitle it'll usually take more time, beucase the program has to wait for the video to be processed by youtube before uploading the captions. For now only srt is supported.
+When uploading a video with subtitle it'll take more time, beucase the program has to wait for the video to be processed by youtube before uploading the captions, I didn't find a workaround to be able to upload while the vide is being processed, if you have any info please let me know! There are basically no info about this lib online. For now only srt is supported.
 
-* UPLOAD A VIDEO AND A CAPTION: you can specify both, a video and a caption file path to send it to youtube, you can also specify the name and language of the caption. For now only .srt is supported. Exemple:
+* UPLOAD A VIDEO AND A CAPTION: you can specify both a video and a caption file path to send to youtube, you can also specify the name and language of the caption. Example:
 ```
 youtube-upload --caption-file=/foo/bar/caption_folder/my_sub.srt --caption-lang="en" /foo/bar/video_folder/my_video.mkv
 
-#will upload the my_video.mkv and my_sub.srt (named english subtitle) to youtube.
+#will upload my_video.mkv and my_sub.srt (named "english subtitle") to youtube.
 ```
-* AUTO SEARCH FOR CAPTION: use ```--caption-file="auto"``` and the program will try to find an srt file with the same name as the video file. Again, both files have to be in the same foder. Exemple:
+* AUTO SEARCH FOR CAPTION: using ```--caption-file="auto"``` the program will try to find a srt with a filename that matches the video's. Both files have to be in the same foder. Example:
 ```
 youtube-upload --caption-file="auto" --caption-lang="en" /foo/bar/video_folder/my_video.mkv
 
-#will upload the my_video.mkv to youtube and try to find a my_video.srt and also upload it to youtube as english caption
+#will upload my_video.mkv to youtube, try to find my_video.srt so it can also be uploaded to youtube as an English captions
 ```
-* Multiple Videos: the videos and captions have to be in the same directory and with the same (exemple: video_legal.mkv and video_legal.srt, video_chato.mkv and video_chato.srt). Make sure to use ```--caption-file="auto"```. Exemple:
+* MULTIPLE VIDEOS: the videos and captions have to be in the same directory and with the same name (exemple: video_legal.mkv and video_legal.srt, video_chato.mkv and video_chato.srt). Make sure to use ```--caption-file="auto"```. Example:
 ```
 youtube-upload --caption-file="auto" --caption-lang="en" /foo/bar/video_folder/*
 
-#will upload all the videos in the folder to youtube and try to find all srt files with the same name and also upload it to youtube as english caption
+#will upload all the videos in the folder to youtube, try to find all srt files with matching names and also upload it to youtube as English captions
 ```
 
 * All commands available for captions
